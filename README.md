@@ -935,7 +935,7 @@ Here, we have also rephrased the expression for evaluating `w`: The values in `w
 
 Looking at the code now, we see that the innermost loop only consists of copying values from one variable to another - or adding/subtracting values. There is no obvious way to further simplify how we evaluate `w` for each pixel. Also note that we take care to instantiate all objects before we enter the loops that draw pixels. This way we don't need to spend time allocating (or garbage collecting) memory, and the overhead of memory management in the inner loops is eliminated.
 
-We now call it a day. Drawing a single triangle takes 0.23 ms on my machine. That is 10% of the time the previous version needed! We have achieved a 10x speedup by rephrasing our calculations so that we get the needed results incrementally - instead of from scratch - for each pixel.
+We now call it a day. Drawing a single triangle takes 0.23 ms on my machine. That is 10% of the time the previous version needed! We have made this version has become ten times as fast as the previous, just by doing the candidate pixel calculations incrementally - instead of from scratch.
 
 The result is a fast, smooth and correct triangle rasterizer. Not bad!
 
