@@ -439,7 +439,7 @@ The rest of the code remains the same.
 
 And with that, we can safely draw lots of triangles - without gaps or overlaps! But, we are not done yet. We will now start animating the triangles.
 
-In the mean time, you might want to look at [the code for this section](4) and some [utility classes](lib). There is also [a running example app](https://kristoffer-dyrkorn.github.io/triangle-rasterizer/4/).
+In the mean time, you might want to look at [the code for this section](4) and some [utility classes](lib). There is also [a running example app](https://kristoffer-dyrkorn.github.io/triangle-rasterizer/4/). Press `space` to show/hide the blue triangle, and `f` to turn the fill rule on/off.
 
 # 5. We've got to move it
 
@@ -510,6 +510,7 @@ We are now ready to inspect the results. Not bad - the triangles are indeed rota
 This can be improved! We will have a look at that in the next section.
 
 In the mean time, you might want to look at [the code for this section](5) and some [utility classes](lib). There is also [a running example app](https://kristoffer-dyrkorn.github.io/triangle-rasterizer/5/).
+Press `space` to show/hide the blue triangle, and `p` to turn the animation on/off.
 
 # 6. Let's go continuous!
 
@@ -633,6 +634,7 @@ Here is the result - the two triangles now rotate smoothly. This looks good!
 But wait - there is something wrong here: Now and then there are white single-pixel gaps along the edge between the triangles. The fill rule is correct and we do use floating point numbers (with double precision, even). What is wrong? We will figure out that next.
 
 In the mean time, you might want to look at [the code for this section](6) and some [utility classes](lib). There is also [a running example app](https://kristoffer-dyrkorn.github.io/triangle-rasterizer/6/).
+Press `space` to show/hide the blue triangle, and `p` to turn the animation on/off.
 
 # 7. One solution, but two new problems
 
@@ -837,7 +839,7 @@ When running the code on my machine, drawing the green triangle takes around 2.3
 
 The profiler in my browser tells me that we spend a lot of time calculating determinants, evaluating the fill rule and instantiating `FixedPointVectors`. Could we speed up our code? Yes we can! In the next section we will do just that.
 
-The [code for this section](8) and some [utility classes](lib) is also available. There is also [a running example app](https://kristoffer-dyrkorn.github.io/triangle-rasterizer/8/).
+The [code for this section](8) and some [utility classes](lib) is also available. There is also [a running example app](https://kristoffer-dyrkorn.github.io/triangle-rasterizer/8/). Press `space` to show/hide the blue triangle, and `p` to turn the animation on/off.
 
 # 9. Time to go incremental
 
@@ -937,6 +939,6 @@ We now call it a day. Drawing a single triangle takes 0.23 ms on my machine. Tha
 
 The result is a fast, smooth and correct triangle rasterizer. Not bad!
 
-Here you can look at the final version [of the code](9) and the [utility classes](lib). There is also [the final example app](https://kristoffer-dyrkorn.github.io/triangle-rasterizer/9/).
+Here you can look at the final version [of the code](9) and the [utility classes](lib). There is also [the final example app](https://kristoffer-dyrkorn.github.io/triangle-rasterizer/9/). As before, press `space` to show/hide the blue triangle, and `p` to turn the animation on/off.
 
 # 10. Epilogue
