@@ -19,6 +19,13 @@ export default class Triangle {
     return ab[1] * ac[0] - ab[0] * ac[1];
   }
 
+  isLeftOrTopEdge(start, end) {
+    const edge = new FixedPointVector(end);
+    edge.sub(start);
+    if (edge[1] > 0 || (edge[1] == 0 && edge[0] < 0)) return true;
+    return false;
+  }
+
   draw(screenCoordinates, color) {
     // get screen coordinates for this triangle
     const va = new FixedPointVector(screenCoordinates[this.va]);
@@ -37,8 +44,12 @@ export default class Triangle {
     const xmin = Math.min(va[0], vb[0], vc[0]) >> FixedPointVector.SHIFT;
     const ymin = Math.min(va[1], vb[1], vc[1]) >> FixedPointVector.SHIFT;
 
-    const xmax = (Math.max(va[0], vb[0], vc[0]) + FixedPointVector.DIVISION_CEILING) >> FixedPointVector.SHIFT;
-    const ymax = (Math.max(va[1], vb[1], vc[1]) + FixedPointVector.DIVISION_CEILING) >> FixedPointVector.SHIFT;
+    const xmax =
+      (Math.max(va[0], vb[0], vc[0]) + FixedPointVector.DIVISION_CEILING) >>
+      FixedPointVector.SHIFT;
+    const ymax =
+      (Math.max(va[1], vb[1], vc[1]) + FixedPointVector.DIVISION_CEILING) >>
+      FixedPointVector.SHIFT;
 
     // screen coordinates at the starting point (top left corner of bounding box, at pixel center)
     const topLeft = new FixedPointVector(xmin + 0.5, ymin + 0.5, 0);
@@ -49,9 +60,9 @@ export default class Triangle {
     wLeft[1] = this.getDeterminant(vc, va, topLeft);
     wLeft[2] = this.getDeterminant(va, vb, topLeft);
 
-    if (isLeftOrTopEdge(vb, vc)) wLeft[0]--;
-    if (isLeftOrTopEdge(vc, va)) wLeft[1]--;
-    if (isLeftOrTopEdge(va, vb)) wLeft[2]--;
+    if (this.isLeftOrTopEdge(vb, vc)) wLeft[0]--;
+    if (this.isLeftOrTopEdge(vc, va)) wLeft[1]--;
+    if (this.isLeftOrTopEdge(va, vb)) wLeft[2]--;
 
     // find per pixel / per line deltas so we can calculate w incrementally
     // note: we need to scale up deltas by the subpixel resolution since we
@@ -92,11 +103,4 @@ export default class Triangle {
       wLeft.add(dwdy);
     }
   }
-}
-
-function isLeftOrTopEdge(start, end) {
-  const edge = new FixedPointVector(end);
-  edge.sub(start);
-  if (edge[1] > 0 || (edge[1] == 0 && edge[0] < 0)) return true;
-  return false;
 }

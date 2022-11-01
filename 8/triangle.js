@@ -19,6 +19,13 @@ export default class Triangle {
     return ab[1] * ac[0] - ab[0] * ac[1];
   }
 
+  isLeftOrTopEdge(start, end) {
+    const edge = new FixedPointVector(end);
+    edge.sub(start);
+    if (edge[1] > 0 || (edge[1] == 0 && edge[0] < 0)) return true;
+    return false;
+  }
+
   draw(screenCoordinates, color) {
     // get screen coordinates for this triangle
     const va = new FixedPointVector(screenCoordinates[this.va]);
@@ -37,8 +44,12 @@ export default class Triangle {
     const xmin = Math.min(va[0], vb[0], vc[0]) >> FixedPointVector.SHIFT;
     const ymin = Math.min(va[1], vb[1], vc[1]) >> FixedPointVector.SHIFT;
 
-    const xmax = (Math.max(va[0], vb[0], vc[0]) + FixedPointVector.DIVISION_CEILING) >> FixedPointVector.SHIFT;
-    const ymax = (Math.max(va[1], vb[1], vc[1]) + FixedPointVector.DIVISION_CEILING) >> FixedPointVector.SHIFT;
+    const xmax =
+      (Math.max(va[0], vb[0], vc[0]) + FixedPointVector.DIVISION_CEILING) >>
+      FixedPointVector.SHIFT;
+    const ymax =
+      (Math.max(va[1], vb[1], vc[1]) + FixedPointVector.DIVISION_CEILING) >>
+      FixedPointVector.SHIFT;
 
     let imageOffset = 4 * (ymin * this.buffer.width + xmin);
 
@@ -63,9 +74,9 @@ export default class Triangle {
         w[1] = this.getDeterminant(vc, va, p);
         w[2] = this.getDeterminant(va, vb, p);
 
-        if (isLeftOrTopEdge(vb, vc)) w[0]--;
-        if (isLeftOrTopEdge(vc, va)) w[1]--;
-        if (isLeftOrTopEdge(va, vb)) w[2]--;
+        if (this.isLeftOrTopEdge(vb, vc)) w[0]--;
+        if (this.isLeftOrTopEdge(vc, va)) w[1]--;
+        if (this.isLeftOrTopEdge(va, vb)) w[2]--;
 
         if (w[0] >= 0 && w[1] >= 0 && w[2] >= 0) {
           this.buffer.data[imageOffset + 0] = color[0];
@@ -78,11 +89,4 @@ export default class Triangle {
       imageOffset += imageStride;
     }
   }
-}
-
-function isLeftOrTopEdge(start, end) {
-  const edge = new FixedPointVector(end);
-  edge.sub(start);
-  if (edge[1] > 0 || (edge[1] == 0 && edge[0] < 0)) return true;
-  return false;
 }

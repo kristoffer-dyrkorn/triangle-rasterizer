@@ -19,6 +19,13 @@ export default class Triangle {
     return ab[1] * ac[0] - ab[0] * ac[1];
   }
 
+  isLeftOrTopEdge(start, end) {
+    const edge = new Vector(end);
+    edge.sub(start);
+    if (edge[1] > 0 || (edge[1] == 0 && edge[0] < 0)) return true;
+    return false;
+  }
+
   draw(screenCoordinates, color, fillRule) {
     // get screen coordinates for this triangle
     const va = screenCoordinates[this.va];
@@ -61,9 +68,9 @@ export default class Triangle {
         w[2] = this.getDeterminant(va, vb, p);
 
         if (fillRule) {
-          if (isLeftOrTopEdge(vb, vc)) w[0]--;
-          if (isLeftOrTopEdge(vc, va)) w[1]--;
-          if (isLeftOrTopEdge(va, vb)) w[2]--;
+          if (this.isLeftOrTopEdge(vb, vc)) w[0]--;
+          if (this.isLeftOrTopEdge(vc, va)) w[1]--;
+          if (this.isLeftOrTopEdge(va, vb)) w[2]--;
         }
 
         if (w[0] >= 0 && w[1] >= 0 && w[2] >= 0) {
@@ -77,11 +84,4 @@ export default class Triangle {
       imageOffset += imageStride;
     }
   }
-}
-
-function isLeftOrTopEdge(start, end) {
-  const edge = new Vector(end);
-  edge.sub(start);
-  if (edge[1] > 0 || (edge[1] == 0 && edge[0] < 0)) return true;
-  return false;
 }
