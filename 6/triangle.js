@@ -22,8 +22,10 @@ export default class Triangle {
   isLeftOrTopEdge(start, end) {
     const edge = new Vector(end);
     edge.sub(start);
-    if (edge[1] > 0 || (edge[1] == 0 && edge[0] < 0)) return true;
-    return false;
+
+    const leftEdge = edge[1] > 0;
+    const topEdge = edge[1] == 0 && edge[0] < 0;
+    return leftEdge || topEdge;
   }
 
   draw(screenCoordinates, color) {
