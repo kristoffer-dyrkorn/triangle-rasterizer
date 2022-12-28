@@ -4,7 +4,7 @@ import Triangle from "./triangle.js";
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-let screenBuffer;
+let imageBuffer, screenBuffer;
 let drawBlue = true;
 
 let angle = 0;
@@ -24,10 +24,18 @@ vertices.push(new Vector(50, 90, 0));
 const rotatedVertices = Array.from({ length: 4 }, () => new Vector());
 
 const greenTriangleIndices = [0, 1, 2];
-const greenTriangle = new Triangle(greenTriangleIndices, screenBuffer);
+const greenTriangle = new Triangle(
+  greenTriangleIndices,
+  imageBuffer,
+  screenBuffer
+);
 
 const blueTriangleIndices = [0, 2, 3];
-const blueTriangle = new Triangle(blueTriangleIndices, screenBuffer);
+const blueTriangle = new Triangle(
+  blueTriangleIndices,
+  imageBuffer,
+  screenBuffer
+);
 
 const greenColor = new Vector(120, 240, 100);
 const blueColor = new Vector(100, 180, 240);
@@ -47,7 +55,12 @@ function resize() {
   canvas.style.width = window.innerWidth + "px";
   canvas.style.height = window.innerHeight + "px";
 
-  screenBuffer = ctx.createImageData(window.innerWidth * devicePixelRatio, window.innerHeight * devicePixelRatio);
+  imageBuffer = ctx.createImageData(
+    window.innerWidth * devicePixelRatio,
+    window.innerHeight * devicePixelRatio
+  );
+
+  screenBuffer = new DataView(imageBuffer.data.buffer);
 }
 
 function rotate() {
@@ -58,8 +71,10 @@ function rotate() {
     v.sub(center);
 
     const r = rotatedVertices[i];
-    r[0] = v[0] * Math.cos(angle * DEG_TO_RAD) - v[1] * Math.sin(angle * DEG_TO_RAD);
-    r[1] = v[0] * Math.sin(angle * DEG_TO_RAD) + v[1] * Math.cos(angle * DEG_TO_RAD);
+    r[0] =
+      v[0] * Math.cos(angle * DEG_TO_RAD) - v[1] * Math.sin(angle * DEG_TO_RAD);
+    r[1] =
+      v[0] * Math.sin(angle * DEG_TO_RAD) + v[1] * Math.cos(angle * DEG_TO_RAD);
 
     r.add(center);
   }
@@ -68,21 +83,23 @@ function rotate() {
 function draw() {
   requestAnimationFrame(draw);
 
-  screenBuffer.data.fill(0);
+  imageBuffer.data.fill(0);
 
   let start = performance.now();
   greenTriangle.draw(rotatedVertices, greenColor);
   triangleDrawTime += performance.now() - start;
 
   if (frameCounter % 100 == 0) {
-    console.log(`Triangle time: ${(triangleDrawTime / frameCounter).toFixed(2)} ms`);
+    console.log(
+      `Triangle time: ${(triangleDrawTime / frameCounter).toFixed(2)} ms`
+    );
   }
 
   if (drawBlue) {
     blueTriangle.draw(rotatedVertices, blueColor);
   }
 
-  ctx.putImageData(screenBuffer, 0, 0);
+  ctx.putImageData(imageBuffer, 0, 0);
 
   angle += angleSpeed;
   frameCounter++;

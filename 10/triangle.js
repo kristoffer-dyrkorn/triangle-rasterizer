@@ -1,8 +1,9 @@
 import FixedPointVector from "../lib/fixedpointvector.js";
 
 export default class Triangle {
-  constructor(vertexIndices, screenBuffer) {
-    this.buffer = screenBuffer;
+  constructor(vertexIndices, imageBuffer, screenBuffer) {
+    this.imageBuffer = imageBuffer;
+    this.screenBuffer = screenBuffer;
 
     this.va = vertexIndices[0];
     this.vb = vertexIndices[1];
@@ -76,29 +77,31 @@ export default class Triangle {
     dwdy[2] = (va[0] - vb[0]) << FixedPointVector.SHIFT;
 
     // screen buffer index for top left pixel in bounding box
-    let imageOffset = 4 * (ymin * this.buffer.width + xmin);
+    let imageOffset = 4 * (ymin * this.imageBuffer.width + xmin);
 
     // stride: change in raster buffer offsets from one line to next
-    const imageStride = 4 * (this.buffer.width - (xmax - xmin) - 1);
+    const imageStride = 4 * (this.imageBuffer.width - (xmax - xmin) - 1);
 
     // hold final w values here
     const w = new FixedPointVector();
+
+    let colorUInt32 = color[0] << 24;
+    colorUInt32 += color[1] << 16;
+    colorUInt32 += color[2] << 8;
+    colorUInt32 += 255;
 
     for (let y = ymin; y <= ymin + 2; y++) {
       w.copy(wLeft);
 
       for (let x = xmin; x <= xmax; x++) {
         if ((w[0] | w[1] | w[2]) >= 0) {
-          this.buffer.data[imageOffset + 0] = color[0];
-          this.buffer.data[imageOffset + 1] = color[1];
-          this.buffer.data[imageOffset + 2] = color[2];
-          this.buffer.data[imageOffset + 3] = 255;
+          this.screenBuffer.setUint32(imageOffset, colorUInt32);
         } else {
           /*
-          this.buffer.data[imageOffset + 0] = 255;
-          this.buffer.data[imageOffset + 1] = 0;
-          this.buffer.data[imageOffset + 2] = 0;
-          this.buffer.data[imageOffset + 3] = 255;
+          this.imageBuffer.data[imageOffset + 0] = 255;
+          this.imageBuffer.data[imageOffset + 1] = 0;
+          this.imageBuffer.data[imageOffset + 2] = 0;
+          this.imageBuffer.data[imageOffset + 3] = 255;
           */
         }
         imageOffset += 4;
@@ -119,15 +122,12 @@ export default class Triangle {
       }
 
       while ((w[0] | w[1] | w[2]) >= 0) {
-        this.buffer.data[imageOffset + 0] = color[0];
-        this.buffer.data[imageOffset + 1] = color[1];
-        this.buffer.data[imageOffset + 2] = color[2];
-        this.buffer.data[imageOffset + 3] = 255;
+        this.screenBuffer.setUint32(imageOffset, colorUInt32);
         imageOffset += 4;
         w.sub(dwdx);
       }
 
-      offsetLeft += 4 * this.buffer.width;
+      offsetLeft += 4 * this.imageBuffer.width;
       imageOffset = offsetLeft;
       wLeft.add(dwdy);
     }
@@ -137,10 +137,7 @@ export default class Triangle {
 
       for (let x = xmin; x <= xmax; x++) {
         if ((w[0] | w[1] | w[2]) >= 0) {
-          this.buffer.data[imageOffset + 0] = color[0];
-          this.buffer.data[imageOffset + 1] = color[1];
-          this.buffer.data[imageOffset + 2] = color[2];
-          this.buffer.data[imageOffset + 3] = 255;
+          this.screenBuffer.setUint32(imageOffset, colorUInt32);
         } else {
           /*
           this.buffer.data[imageOffset + 0] = 0;
