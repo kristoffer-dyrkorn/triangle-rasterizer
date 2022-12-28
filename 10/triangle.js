@@ -84,11 +84,11 @@ export default class Triangle {
     // hold final w values here
     const w = new FixedPointVector();
 
-    for (let y = ymin; y <= ymin + 2; y++) {
+    for (let y = ymin; y <= ymin + 1; y++) {
       w.copy(wLeft);
 
       for (let x = xmin; x <= xmax; x++) {
-        if ((w[0] | w[1] | w[2]) >= 0) {
+        if ((w[0] | w[1] | w[2]) > 0) {
           this.buffer.data[imageOffset + 0] = color[0];
           this.buffer.data[imageOffset + 1] = color[1];
           this.buffer.data[imageOffset + 2] = color[2];
@@ -110,7 +110,7 @@ export default class Triangle {
 
     let offsetLeft = imageOffset;
 
-    for (let y = ymin + 3; y <= ymax - 2; y++) {
+    for (let y = ymin + 2; y <= ymax - 2; y++) {
       w.copy(wLeft);
 
       while ((w[0] | w[1] | w[2]) < 0) {
@@ -118,7 +118,7 @@ export default class Triangle {
         w.sub(dwdx);
       }
 
-      while ((w[0] | w[1] | w[2]) >= 0) {
+      while ((w[0] | w[1] | w[2]) > 0) {
         this.buffer.data[imageOffset + 0] = color[0];
         this.buffer.data[imageOffset + 1] = color[1];
         this.buffer.data[imageOffset + 2] = color[2];
@@ -132,11 +132,11 @@ export default class Triangle {
       wLeft.add(dwdy);
     }
 
-    for (let y = ymax - 2; y <= ymax; y++) {
+    for (let y = ymax - 1; y <= ymax; y++) {
       w.copy(wLeft);
 
       for (let x = xmin; x <= xmax; x++) {
-        if ((w[0] | w[1] | w[2]) >= 0) {
+        if ((w[0] | w[1] | w[2]) > 0) {
           this.buffer.data[imageOffset + 0] = color[0];
           this.buffer.data[imageOffset + 1] = color[1];
           this.buffer.data[imageOffset + 2] = color[2];
