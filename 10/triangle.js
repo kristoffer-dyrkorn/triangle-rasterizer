@@ -75,7 +75,7 @@ export default class Triangle {
     dwdy[1] = (vc[0] - va[0]) << FixedPointVector.SHIFT;
     dwdy[2] = (va[0] - vb[0]) << FixedPointVector.SHIFT;
 
-    // index of first pixel in screen buffer
+    // screen buffer index for top left pixel in bounding box
     let imageOffset = 4 * (ymin * this.buffer.width + xmin);
 
     // stride: change in raster buffer offsets from one line to next
@@ -84,7 +84,7 @@ export default class Triangle {
     // hold final w values here
     const w = new FixedPointVector();
 
-    for (let y = ymin; y <= ymax; y++) {
+    for (let y = ymin; y <= ymin + 2; y++) {
       w.copy(wLeft);
 
       for (let x = xmin; x <= xmax; x++) {
@@ -93,6 +93,61 @@ export default class Triangle {
           this.buffer.data[imageOffset + 1] = color[1];
           this.buffer.data[imageOffset + 2] = color[2];
           this.buffer.data[imageOffset + 3] = 255;
+        } else {
+          /*
+          this.buffer.data[imageOffset + 0] = 255;
+          this.buffer.data[imageOffset + 1] = 0;
+          this.buffer.data[imageOffset + 2] = 0;
+          this.buffer.data[imageOffset + 3] = 255;
+          */
+        }
+        imageOffset += 4;
+        w.sub(dwdx);
+      }
+      imageOffset += imageStride;
+      wLeft.add(dwdy);
+    }
+
+    let offsetLeft = imageOffset;
+
+    for (let y = ymin + 3; y <= ymax - 2; y++) {
+      w.copy(wLeft);
+
+      while ((w[0] | w[1] | w[2]) < 0) {
+        imageOffset += 4;
+        w.sub(dwdx);
+      }
+
+      while ((w[0] | w[1] | w[2]) >= 0) {
+        this.buffer.data[imageOffset + 0] = color[0];
+        this.buffer.data[imageOffset + 1] = color[1];
+        this.buffer.data[imageOffset + 2] = color[2];
+        this.buffer.data[imageOffset + 3] = 255;
+        imageOffset += 4;
+        w.sub(dwdx);
+      }
+
+      offsetLeft += 4 * this.buffer.width;
+      imageOffset = offsetLeft;
+      wLeft.add(dwdy);
+    }
+
+    for (let y = ymax - 2; y <= ymax; y++) {
+      w.copy(wLeft);
+
+      for (let x = xmin; x <= xmax; x++) {
+        if ((w[0] | w[1] | w[2]) >= 0) {
+          this.buffer.data[imageOffset + 0] = color[0];
+          this.buffer.data[imageOffset + 1] = color[1];
+          this.buffer.data[imageOffset + 2] = color[2];
+          this.buffer.data[imageOffset + 3] = 255;
+        } else {
+          /*
+          this.buffer.data[imageOffset + 0] = 0;
+          this.buffer.data[imageOffset + 1] = 255;
+          this.buffer.data[imageOffset + 2] = 0;
+          this.buffer.data[imageOffset + 3] = 255;
+          */
         }
         imageOffset += 4;
         w.sub(dwdx);
