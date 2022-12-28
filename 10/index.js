@@ -4,7 +4,7 @@ import Triangle from "./triangle.js";
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-let imageBuffer, screenBuffer;
+let screenBuffer;
 let drawBlue = true;
 
 let angle = 0;
@@ -24,18 +24,10 @@ vertices.push(new Vector(50, 90, 0));
 const rotatedVertices = Array.from({ length: 4 }, () => new Vector());
 
 const greenTriangleIndices = [0, 1, 2];
-const greenTriangle = new Triangle(
-  greenTriangleIndices,
-  imageBuffer,
-  screenBuffer
-);
+const greenTriangle = new Triangle(greenTriangleIndices, screenBuffer);
 
 const blueTriangleIndices = [0, 2, 3];
-const blueTriangle = new Triangle(
-  blueTriangleIndices,
-  imageBuffer,
-  screenBuffer
-);
+const blueTriangle = new Triangle(blueTriangleIndices, screenBuffer);
 
 const greenColor = new Vector(120, 240, 100);
 const blueColor = new Vector(100, 180, 240);
@@ -55,12 +47,10 @@ function resize() {
   canvas.style.width = window.innerWidth + "px";
   canvas.style.height = window.innerHeight + "px";
 
-  imageBuffer = ctx.createImageData(
+  screenBuffer = ctx.createImageData(
     window.innerWidth * devicePixelRatio,
     window.innerHeight * devicePixelRatio
   );
-
-  screenBuffer = new DataView(imageBuffer.data.buffer);
 }
 
 function rotate() {
@@ -83,7 +73,7 @@ function rotate() {
 function draw() {
   requestAnimationFrame(draw);
 
-  imageBuffer.data.fill(0);
+  screenBuffer.data.fill(0);
 
   let start = performance.now();
   greenTriangle.draw(rotatedVertices, greenColor);
@@ -99,7 +89,7 @@ function draw() {
     blueTriangle.draw(rotatedVertices, blueColor);
   }
 
-  ctx.putImageData(imageBuffer, 0, 0);
+  ctx.putImageData(screenBuffer, 0, 0);
 
   angle += angleSpeed;
   frameCounter++;
