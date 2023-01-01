@@ -42,7 +42,7 @@ export default class Triangle {
       return;
     }
 
-    // create bounding box around triangle, expanding to integer coordinates
+    // create bounding box around triangle, truncating to integer coordinates
     const xmin = Math.min(va[0], vb[0], vc[0]) >> FixedPointVector.SHIFT;
     const ymin = Math.min(va[1], vb[1], vc[1]) >> FixedPointVector.SHIFT;
 
@@ -84,6 +84,8 @@ export default class Triangle {
     // hold final w values here
     const w = new FixedPointVector();
 
+    // sample all pixels in the two first rows, this is needed as
+    // they might be empty due to round offs and/or fill rule
     for (let y = ymin; y <= ymin + 1; y++) {
       w.copy(wLeft);
 
@@ -110,6 +112,9 @@ export default class Triangle {
 
     let offsetLeft = imageOffset;
 
+    // main loop: now we can be sure we have triangle pixels to draw in each row
+    // so, do two horizontal "while"-loops, one until we hit the tri, and then one as we fill the tri
+    // this way we do not scan un-needed pixels to the right of the tri (after filling it)
     for (let y = ymin + 2; y <= ymax - 2; y++) {
       w.copy(wLeft);
 
@@ -132,6 +137,8 @@ export default class Triangle {
       wLeft.add(dwdy);
     }
 
+    // sample all pixels in the two last rows, this is needed as
+    // they might be empty due to round offs and/or fill rule
     for (let y = ymax - 1; y <= ymax; y++) {
       w.copy(wLeft);
 
