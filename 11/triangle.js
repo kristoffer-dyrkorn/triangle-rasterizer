@@ -10,7 +10,7 @@ export default class Triangle {
     this.endBuffer = new Uint32Array(this.buffer.height);
   }
 
-  dda_scan(start, end, buffer) {
+  floating_point_scan(start, end, buffer) {
     let x = start[0];
     const dx = (end[0] - start[0]) / (end[1] - start[1]);
     for (let y = start[1]; y <= end[1]; y++) {
