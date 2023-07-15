@@ -67,6 +67,18 @@ export default class Triangle {
     }
   }
 
+  findEdges(a, b, v) {
+    // if vertex a is above vertex b then edge a->b is a left edge
+    if (v[a][1] < v[b][1]) {
+      this.scan(v[a], v[b], this.startBuffer);
+    } else if (v[a][1] > v[b][1]) {
+      // or, if vertex b is above vertex a then edge b->a is a right edge
+      this.scan(v[b], v[a], this.endBuffer);
+      // note: if vertex a and b form a horizontal edge, we can ignore that case,
+      // since we will not need to scan the edge.
+    }
+  }
+
   // assumes integer coordinates and ccw vertex order
   draw(coordinates, color) {
     const v = [];
@@ -82,24 +94,9 @@ export default class Triangle {
       return;
     }
 
-    // if vertex 0 is above vertex 1 then edge 0->1 is a left edge
-    if (v[0][1] < v[1][1]) {
-      this.scan(v[0], v[1], this.startBuffer);
-    } else if (v[0][1] > v[1][1]) {
-      // or, if vertex 1 is above vertex 0 then edge 1->0 is a right edge
-      this.scan(v[1], v[0], this.endBuffer);
-    }
-    if (v[1][1] < v[2][1]) {
-      this.scan(v[1], v[2], this.startBuffer);
-    } else if (v[1][1] > v[2][1]) {
-      this.scan(v[2], v[1], this.endBuffer);
-    }
-
-    if (v[2][1] < v[0][1]) {
-      this.scan(v[2], v[0], this.startBuffer);
-    } else if (v[2][1] > v[0][1]) {
-      this.scan(v[0], v[2], this.endBuffer);
-    }
+    this.findEdges(0, 1, v);
+    this.findEdges(1, 2, v);
+    this.findEdges(2, 0, v);
 
     const ymin = Math.min(v[0][1], v[1][1], v[2][1]);
     const ymax = Math.max(v[0][1], v[1][1], v[2][1]);
@@ -112,12 +109,13 @@ export default class Triangle {
     while (y <= ymax) {
       // we start at xmin+1 due to "top left" rasterization rule
       let x = this.startBuffer[y] + 1;
+      let address = imageOffset + (x << 2);
       while (x <= this.endBuffer[y]) {
         // draw a pixel
-        this.buffer.data[imageOffset + 4 * x + 0] = color[0];
-        this.buffer.data[imageOffset + 4 * x + 1] = color[1];
-        this.buffer.data[imageOffset + 4 * x + 2] = color[2];
-        this.buffer.data[imageOffset + 4 * x + 3] = 255;
+        this.buffer.data[address++] = color[0];
+        this.buffer.data[address++] = color[1];
+        this.buffer.data[address++] = color[2];
+        this.buffer.data[address++] = 255;
         x++;
       }
       y++;
