@@ -38,23 +38,28 @@ export default class Triangle {
     let numerator =
       (dy * (start[0] & 15) - dx * (start[1] & 15)) >> FixedPointVector.SHIFT;
 
-    // use absolute values to simplify the loops
+    // use absolute value for dx to simplify the loops
+    // the other vars are used in the same loops and their corresponding signs must match
+    // so their signs are also flipped
     if (dx < 0) {
-      pixel_step = -pixel_step;
       dx = -dx;
+      pixel_step = -pixel_step;
       numerator = -numerator;
     }
 
-    // dy is always positive, and since we have modified dx to be its absolute value,
-    // we can compare them directly (no need to do abs(dy) > abs(dx))
+    // dy will always be positive, and since we have modified dx to be abs(dx),
+    // we can compare the two directly (no need to do abs(dy) > abs(dx))
     if (dy > dx) {
       // y is longest axis, loop for each y
 
       // set up loop vars
-      // y and endy are integer pixel coordinates (conceptually at integer y + 0.5)
       // x is the coordinate (in fixed point) at (conceptually) integer y + 0.5
+      // y and endy are integer pixel coordinates (conceptually at integer y + 0.5)
+
       // the initial numerator value is compensating for the fact that the y coordinate for
       // the start point is not in the pixel center
+      // ie it creates a setup as if the edge was extended to integer y + 0.5
+      // but actually extending the edge might make it move to next pixel, which is wrong
       let x = start[0];
       let y = start[1] >> FixedPointVector.SHIFT;
       let end_y = end[1] >> FixedPointVector.SHIFT;
