@@ -26,50 +26,34 @@ export default class Triangle {
     let dx = end[0] - start[0];
     const dy = end[1] - start[1];
 
+    // amount to step the x coordinate per iteration
+    // the value is 1.0, in fixed point coordinates
     let pixel_step = FixedPointVector.ONE;
 
     // insert the end edge value into the buffer, this makes the loops simpler
     buffer[end[1] >> FixedPointVector.SHIFT] = end[0];
 
-    const start_x_fractional = start[0] & 15;
-    const start_y_fractional = start[1] & 15;
+    // for now, calculate the numerator as if the y-axis is the major axis
+    // the value will be adjusted if the x-axis is the major axis
+    let numerator =
+      (dy * (start[0] & 15) - dx * (start[1] & 15)) >> FixedPointVector.SHIFT;
 
-    const start_x_integer = start[0] & ~15;
-    const end_x_integer = end[0] & ~15;
-
-    const dx_dy = dx / dy;
-
-    // use absolute values to simplify loops
+    // use absolute values to simplify the loops
     if (dx < 0) {
       pixel_step = -pixel_step;
       dx = -dx;
+      numerator = -numerator;
     }
 
+    // dy is always positive, and since we have modified dx to be its absolute value,
+    // we can compare them directly (no need to do abs(dy) > abs(dx))
     if (dy > dx) {
       // y is longest axis, loop for each y
 
-      // get fractional x coordinate where the edge intersects
-      // the line y = trunc(starty) + 0.5
-      const x_intersect =
-        start_x_fractional -
-        Math.round((start_y_fractional - FixedPointVector.HALF) * dx_dy);
-
-      // convert the fractional x into an initial error term,
-      // ie a horizontal offset relative to the ideal starting point (pixel center)
-      const x_offset = x_intersect - FixedPointVector.HALF;
-
-      // convert the inital error term into a numerator value,
-      // by multiplying by dy
-      let numerator = (dy * x_offset) >> FixedPointVector.SHIFT;
-
-      // if the edge goes down and to the left, reverse the offset direction
-      // since a location to the left of zero would then be a positive offset
-      if (pixel_step < 0) numerator = -numerator;
-
       // set up loop vars
       // y and endy are integer pixel coordinates (conceptually at integer y + 0.5)
-      // x is the coordinate (in fixed point) at (conceptually) integer y + 0.5)
-      // the initial numerator value compensates for the fact that the y coordinate for
+      // x is the coordinate (in fixed point) at (conceptually) integer y + 0.5
+      // the initial numerator value is compensating for the fact that the y coordinate for
       // the start point is not in the pixel center
       let x = start[0];
       let y = start[1] >> FixedPointVector.SHIFT;
@@ -87,26 +71,18 @@ export default class Triangle {
     } else {
       // x is longest axis, loop for each x
 
-      // get fractional y coordinate where the edge intersects
-      // the line x = trunc(startx) + 0.5
-      const y_intersect =
-        start_y_fractional -
-        Math.round((start_x_fractional - FixedPointVector.HALF) / dx_dy);
-
-      // convert fractional y into an initial error term, ie a vertical
-      // distance to the ideal line - which starts at pixel center
-      const y_offset = y_intersect - FixedPointVector.HALF;
-
-      // convert inital error term into an intial numerator value
-      // by multiplying by dx
-      let numerator = (dx * y_offset) >> FixedPointVector.SHIFT;
+      // initial assumption was that y was major axis,
+      // when x is major axis we need to reverse the sign
+      numerator = -numerator;
 
       // set up loop vars
       // x and endx are fixed point pixel coordinates at integer x + 0.5
       // y is integer coordinate (conceptually sampled at integer y + 0.5)
-      let x = start_x_integer + FixedPointVector.HALF;
+      // the initial numerator value is compensating for the fact that the x coordinate for
+      // the start point is not in the pixel center
+      let x = (start[0] & ~15) + FixedPointVector.HALF;
       let y = start[1] >> FixedPointVector.SHIFT;
-      let end_x = end_x_integer + FixedPointVector.HALF;
+      let end_x = (end[0] & ~15) + FixedPointVector.HALF;
 
       // x is longest axis, loop for each x
       // by checking for != we don't need to special case positive/negative x directions
@@ -180,18 +156,9 @@ export default class Triangle {
     // start at ymin+1 due to "top left" rasterization rule
     let y = ymin + 1;
     while (y <= ymax) {
-      // TODO: do tie breaking at half pixels and not whole pixels
+      // TODO move tiebreaking to pixel center
       let x = this.startBuffer[y] >> FixedPointVector.SHIFT;
-      let x_frac = this.startBuffer[y] & 15;
-      if (x_frac >= FixedPointVector.HALF) {
-        //        x += 1;
-      }
-
       let endx = (this.endBuffer[y] >> FixedPointVector.SHIFT) - 1;
-      let endx_frac = this.endBuffer[y] & 15;
-      if (endx_frac < FixedPointVector.HALF) {
-        //        endx -= 1;
-      }
 
       // hortizontal clip
       x = Math.max(x, 0);

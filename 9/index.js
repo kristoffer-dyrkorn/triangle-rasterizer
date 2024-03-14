@@ -47,7 +47,10 @@ function resize() {
   canvas.style.width = window.innerWidth + "px";
   canvas.style.height = window.innerHeight + "px";
 
-  screenBuffer = ctx.createImageData(window.innerWidth * devicePixelRatio, window.innerHeight * devicePixelRatio);
+  screenBuffer = ctx.createImageData(
+    window.innerWidth * devicePixelRatio,
+    window.innerHeight * devicePixelRatio
+  );
 }
 
 function rotate() {
@@ -58,8 +61,10 @@ function rotate() {
     v.sub(center);
 
     const r = rotatedVertices[i];
-    r[0] = v[0] * Math.cos(angle * DEG_TO_RAD) - v[1] * Math.sin(angle * DEG_TO_RAD);
-    r[1] = v[0] * Math.sin(angle * DEG_TO_RAD) + v[1] * Math.cos(angle * DEG_TO_RAD);
+    r[0] =
+      v[0] * Math.cos(angle * DEG_TO_RAD) - v[1] * Math.sin(angle * DEG_TO_RAD);
+    r[1] =
+      v[0] * Math.sin(angle * DEG_TO_RAD) + v[1] * Math.cos(angle * DEG_TO_RAD);
 
     r.add(center);
   }
@@ -75,7 +80,9 @@ function draw() {
   triangleDrawTime += performance.now() - start;
 
   if (frameCounter % 100 == 0) {
-    console.log(`Triangle time: ${(triangleDrawTime / frameCounter).toFixed(2)} ms`);
+    console.log(
+      `Triangle time: ${(triangleDrawTime / frameCounter).toFixed(2)} ms`
+    );
   }
 
   if (drawBlue) {

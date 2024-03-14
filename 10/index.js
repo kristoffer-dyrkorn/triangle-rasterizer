@@ -8,7 +8,7 @@ let screenBuffer;
 let drawBlue = true;
 
 let angle = 0;
-let angleSpeed = 0.15;
+let angleSpeed = 0;
 
 window.addEventListener("resize", resize);
 window.addEventListener("keydown", toggle);
