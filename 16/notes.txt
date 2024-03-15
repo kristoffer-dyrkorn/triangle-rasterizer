@@ -1,0 +1,169 @@
+  scan(start, end, buffer) {
+    let dx = end[0] - start[0];
+    const dy = end[1] - start[1];
+
+    let signdx = 1;
+
+    if (dx < 0) {
+      signdx = -1;
+      dx = -dx;
+    }
+
+    let x = start[0];
+    let y = start[1];
+
+    let nominator = 0;
+
+    if (dy > dx) {
+      // y is longest axis, loop for each y
+      while (y < end[1]) {
+        y++;
+        nominator += dx;
+        if (nominator >= dy) {
+          x += signdx;
+          nominator -= dy;
+        }
+        // write out x-value at center y of pixel
+        if ((y & 15) == FixedPointVector.HALF) {
+          buffer[y >> FixedPointVector.SHIFT] = x >> FixedPointVector.SHIFT;
+          // TODO: store all attributes under interpolation in row table
+        }
+      }
+      buffer[y >> FixedPointVector.SHIFT] = x >> FixedPointVector.SHIFT;
+    } else {
+      // x is longest axis, loop for each x
+      // by checking for != we don't need to special case positive/negative x directions
+      while (x != end[0]) {
+        x += signdx;
+        nominator += dy;
+        if (nominator >= dx) {
+          y++;
+          nominator -= dx;
+          // write out x-value at center y of pixel
+          if ((y & 15) == FixedPointVector.HALF) {
+            buffer[y >> FixedPointVector.SHIFT] = x >> FixedPointVector.SHIFT;
+          }
+        }
+      }
+      buffer[y >> FixedPointVector.SHIFT] = x >> FixedPointVector.SHIFT;
+    }
+  }
+
+
+    scan3(start, end, buffer) {
+    let dx = end[0] - start[0];
+    let dy = end[1] - start[1];
+
+    let signdx = 1;
+
+    if (dx < 0) {
+      signdx = -1;
+      dx = -dx;
+    }
+
+    let x = start[0];
+    let y = start[1];
+
+    let nominator = 0;
+
+    if (dy > dx) {
+      // y is longest axis, loop for each y
+
+      // initial subpixels
+      while ((y & 15) != FixedPointVector.HALF) {
+        y++;
+        nominator += dx;
+        if (nominator >= dy) {
+          x += signdx;
+          nominator -= dy;
+        }
+      }
+
+      // now we are at pixel centers
+      buffer[y >> FixedPointVector.SHIFT] = x >> FixedPointVector.SHIFT;
+
+      // run on whole pixels
+      while (y < end[1]) {
+        y += FixedPointVector.ONE;
+        nominator += dx << FixedPointVector.SHIFT;
+        if (nominator >= dy) {
+          x += signdx << FixedPointVector.SHIFT;
+          nominator -= dy;
+        }
+        buffer[y >> FixedPointVector.SHIFT] = x >> FixedPointVector.SHIFT;
+      }
+    } else {
+      // x is longest axis, loop for each x
+      // by checking for != we don't need to special case positive/negative x directions
+      while (x != end[0]) {
+        x += signdx;
+        nominator += dy;
+        if (nominator >= dx) {
+          y++;
+          nominator -= dx;
+          // write out x-value at center y of pixel
+          if ((y & 15) == FixedPointVector.HALF) {
+            buffer[y >> FixedPointVector.SHIFT] = x >> FixedPointVector.SHIFT;
+          }
+        }
+      }
+      buffer[y >> FixedPointVector.SHIFT] = x >> FixedPointVector.SHIFT;
+    }
+  }
+
+  scan2(start, end, buffer) {
+    let x = start[0] >> FixedPointVector.SHIFT;
+    let y = start[1] >> FixedPointVector.SHIFT;
+
+    const xend = end[0] >> FixedPointVector.SHIFT;
+    const yend = end[1] >> FixedPointVector.SHIFT;
+
+    let dx = end[0] - start[0];
+    let dy = end[1] - start[1];
+
+    let signdx = 1;
+
+    if (dx < 0) {
+      signdx = -1;
+      dx = -dx;
+    }
+
+    // insert the endpoint into the buffer, this enables easier loops below
+    //    buffer[yend] = xend;
+
+    let nominator;
+
+    if (dy > dx) {
+      const dxdy = (end[0] - start[0]) / dy;
+      const y_to_center = (start[1] & 0xf) - FixedPointVector.HALF;
+      const x_to_center = y_to_center * dxdy;
+      nominator = x_to_center;
+
+      // y is longest axis, loop for each y
+      while (y < yend) {
+        y++;
+        nominator += dx;
+        if (nominator >= dy) {
+          x += signdx;
+          nominator -= dy;
+        }
+        buffer[y] = x;
+      }
+    } else {
+      const dydx = dy / (end[0] - start[0]);
+      const x_to_center = (start[0] & 0xf) - FixedPointVector.HALF;
+      const y_to_center = x_to_center * dydx;
+      nominator = y_to_center;
+      // x is longest axis, loop for each x
+      // by checking for != we don't need to special case positive/negative x directions
+      while (x != xend) {
+        x += signdx;
+        nominator += dy;
+        if (nominator >= dx) {
+          y++;
+          nominator -= dx;
+          buffer[y] = x;
+        }
+      }
+    }
+  }

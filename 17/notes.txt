@@ -1,0 +1,114 @@
+
+
+fp_integer(x):
+ return x >> 4
+
+fp_fraction(x):
+ return x & 15
+
+fp_floor(x):
+ return x & ~15
+
+fp_floor_div(x, y):
+ return x / y | 0
+
+fp_multiply(x, y):
+ return (x * y) >> 4
+
+fp_fix(x):
+ return Math.round(1.0 * 16)
+
+// return (x * 16 + 1) | 0 går ikke, blir ikke riktig for x = 1.0
+
+---
+
+scan(start, end, buffer) {
+    const dx = end[0] - start[0];
+    const dy = end[1] - start[1];
+
+    const yOint = start[1] & ~15 + 16;
+    const y1int = end[1] & ~15 + 16;
+
+    let xi, si, r, inc, dec;
+
+    if (yOint != y1int) {
+        const alpha = ((start[0] & 15) * dy) + (dx * (yOint - start[1])) >> 4
+        const beta = alpha / dy | 0;
+        const xi_fp = (start[0] & ~15) + beta;
+
+        if (dy >= 16) {
+            const si_fp = dx / dy | 0;
+            const sf = dx - (si_fp * dy) >> 4;
+
+            r = alpha - (beta * dy) >> 4 + sf - dy;
+            si = si_fp >> 4;
+            inc = sf;
+            dec = sf - dy;
+        }
+        xi = xi_fp >> 4;
+    }
+
+    for (let yi = yOint >> 4; yi < y1int >> 4; yi++) {
+        buffer[yi] = xi;
+        if (r > 0) {
+            xi += si + 1;
+            r += dec;
+        } else {
+            xi += si;
+            r += inc;
+    }
+}
+
+----
+
+function scan (x0, y0, ×1, y1) {
+    fixpoint yOint, yiint, r, inc, dec;
+    fixpoint dx = x1-x0;
+    fixpoint dy = yl-y0;
+    fixpoint xi_, si_;
+
+    /* temporary variables (fixpoint xi and si) */
+    fixpoint alpha, beta; 
+    
+    /* temporary variables */
+    fixpoint sf;
+    int xi, si, yi;
+
+    yOint = fp_floor (y0) + fp_fix(1.0);
+    yiint = fp_floor (y1) + fp_fix(1.0);
+
+    if (yOint != yiint) {
+    /* 
+    * alpha is computed at double precision, then truncated (this
+    * computes the subpixel containing the x-intersection of the
+    * edge with the scanline.
+    * Note: x0 is split into integer and fractional parts here.
+    */
+    
+    alpha = fp-trunc(fp_dbladd(fp_dblmultiply(1p_fraction(x0),dy), fp-dblmultiply(dx, yOint - y0)));
+    beta = fp-floor_div (alpha, dy);
+    xi_ = fp_floor (x0) + beta;
+    /* If dy < 1, then these variables are not used since edge crosses at most one scanline. We also avoid causing underflow that could occur with dy<1. (Sec. 9) */
+
+    if (dy >= fp_fix(1.0)) {
+        si_ = fp-floor_div(dx, dy);
+        sf = dx - fp_multiply (si_, dy);
+
+        /* (alpha - beta*dy) = fractional part of the x-intercept. */
+        r = alpha - fp-multiply (beta, dy) + sf - dy;
+        si = fp_integer (si_);
+        inc = sf;
+        dec = sf - dy;
+        xi = fp_integer(xi_);
+    }
+
+    for (yi = fp_integer (yOint); yi < fp_integer (yiint); yi++) {
+        draw_point (xi, yi);
+        if (r > 0) {
+            xi += si + 1;
+            r += dec;
+        } else {
+            xi += si;
+            r += inc;
+    }
+}

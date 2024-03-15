@@ -109,9 +109,14 @@ export default class Triangle {
     while (y <= ymax) {
       // we start at xmin+1 due to "top left" rasterization rule
       let x = this.startBuffer[y] + 1;
+      let endx = this.endBuffer[y];
+
+      // TODO: bake final color as int32 RGBA value (little-endian)
+
       let address = imageOffset + (x << 2);
-      while (x <= this.endBuffer[y]) {
+      while (x <= endx) {
         // draw a pixel
+
         this.buffer.data[address++] = color[0];
         this.buffer.data[address++] = color[1];
         this.buffer.data[address++] = color[2];
